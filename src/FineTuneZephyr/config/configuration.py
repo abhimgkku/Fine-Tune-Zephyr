@@ -101,6 +101,8 @@ class ConfigurationManager:
                 max_steps = param.max_steps,
                 fp16 = param.fp16,
                 push_to_hub = param.push_to_hub,
+                max_seq_length = param.max_seq_length,
+                packing = param.packing,
              
 
         )
@@ -112,12 +114,12 @@ class ConfigurationManager:
         param = self.param.LoraConfiguration
 
         lora_config = LoraCongif(
-                    lora_r = param.lora_r
-                    lora_alpha = param.lora_alpha
-                    lora_dropout = param.lora_dropout
-                    bias =  param.bias
-                    task_type = param.task_type
-                    target_modules = param.target_modules
+                    lora_r = param.lora_r,
+                    lora_alpha = param.lora_alpha,
+                    lora_dropout = param.lora_dropout,
+                    bias =  param.bias,
+                    task_type = param.task_type,
+                    target_modules = param.target_modules,
             
 
 

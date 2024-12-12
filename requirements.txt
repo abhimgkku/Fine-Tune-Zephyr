@@ -15,5 +15,6 @@ python-dotenv
 pymongo
 python-box
 ensure
+huggingface-hub
 
 -e .

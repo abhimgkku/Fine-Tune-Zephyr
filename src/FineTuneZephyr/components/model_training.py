@@ -1,6 +1,7 @@
 import os
 from src.FineTuneZephyr.config.configuration import ModelTrainingConfig,TraningArgumentConfig,LoraCongif
-from peft import LoraConfig, PeftModel
+from peft import LoraConfig, PeftModel,get_peft_model
+from peft import prepare_model_for_kbit_training
 from trl import SFTTrainer
 import torch
 from datasets import load_from_disk
@@ -11,26 +12,19 @@ class ModelTraining:
         self.model_training_config = model_training_config
         self.training_parameters = training_parameters
         self.lora_config = lora_config
-"""         compute_dtype = getattr(torch, self.lora_config.bnb_4bit_compute_dtype)
-        if compute_dtype == torch.float16 and self.lora_config.load_in_4bit:
-            major, _ = torch.cuda.get_device_capability()
-            if major >= 8:
-                print("=" * 80)
-                print("Your GPU supports bfloat16: accelerate training with bf16=True")
-                print("=" * 80) """
-
+    
     # Load Base Model
     def Base_model(self):
         bnb_config = GPTQConfig(
-                                    bits=self.training_parameters.bits,
-                                    disable_exllama=self.training_parameters.disable_exllama,
-                                    tokenizer=self.Zephyr_tokenizer()
+                    bits=self.training_parameters.bits,
+                    disable_exllama=self.training_parameters.disable_exllama,
+                    tokenizer=self.Zephyr_tokenizer()
                                 )
 
         model = AutoModelForCausalLM.from_pretrained(
-                                                        self.training_parameters.model_id,
-                                                        quantization_config=bnb_config,
-                                                        device_map=self.training_parameters.device_map
+                self.training_parameters.model_id,
+                quantization_config=bnb_config,
+                device_map=self.training_parameters.device_map
                                                     )
 
         print("\n====================================================================\n")
@@ -45,14 +39,14 @@ class ModelTraining:
 
         print("\n====================================================================\n")
         print("\t\t\tMODEL CONFIG UPDATED")
-        print("\n====================================================================)
+        print("\n====================================================================\n")
 
         return model
     
     # Load Zephyr tokenizer
 
     def Zephyr_tokenizer(self):
-        tokenizer = AutoTokenizer.from_pretrained(self.traitraining_parameters.model_id)
+        tokenizer = AutoTokenizer.from_pretrained(self.training_parameters.model_id)
         tokenizer.pad_token = tokenizer.eos_token
         return tokenizer
     
@@ -61,41 +55,36 @@ class ModelTraining:
 
     def peft_Lora_configuration(self):
         peft_config = LoraConfig(
-        lora_alpha=self.lora_config.lora_alpha,
-        lora_dropout=self.lora_config.lora_dropout,
-        r=self.lora_config.lora_r,
-        bias="none",
-        task_type="CAUSAL_LM",
-       )
-        
+                            r=self.lora_config.lora_r,
+                            lora_alpha=self.lora_config.lora_alpha,
+                            lora_dropout=self.lora_config.lora_dropout,
+                            bias=self.lora_config.bias,
+                            task_type=self.lora_config.task_type,
+                            target_modules=self.lora_config.target_modules
+                            )
         return peft_config
         
     def Load_dataset(self):
 
-        dataset = load_from_disk(self.config.traning_data_file)
-        dataset = dataset.select(range(2))
+        dataset = load_from_disk(self.model_training_config.traning_data_file)
+        #dataset = dataset.select(range(2))
 
         return dataset
     
     def Training_Argument(self):
         training_arguments = TrainingArguments(
-        output_dir=self.config.model_name,
-        num_train_epochs=self.param.num_train_epochs,
-        per_device_train_batch_size=self.param.per_device_train_batch_size,
-        gradient_accumulation_steps=self.param.gradient_accumulation_steps,
-        optim=self.param.optim,
-        save_steps=self.param.save_steps,
-        logging_steps=self.param.logging_steps,
-        learning_rate=self.param.learning_rate,
-        weight_decay=self.param.weight_decay,
-        fp16=self.param.fp16,
-        bf16=self.param.bf16,
-        max_grad_norm=self.param.max_grad_norm,
-        max_steps=self.param.max_steps,
-        warmup_ratio=self.param.warmup_ratio,
-        group_by_length=self.param.group_by_length,
-        lr_scheduler_type=self.param.lr_scheduler_type,
-        report_to="tensorboard"
+        output_dir=self.model_training_config.model_name,
+        per_device_train_batch_size=self.training_parameters.batch_size,
+        gradient_accumulation_steps=self.training_parameters.grad_accumulation_steps,
+        optim=self.training_parameters.optimizer,
+        learning_rate=self.training_parameters.lr,
+        lr_scheduler_type=self.training_parameters.lr_scheduler,
+        save_strategy=self.training_parameters.save_strategy,
+        logging_steps=self.training_parameters.logging_steps,
+        num_train_epochs=self.training_parameters.num_train_epoch,
+        max_steps=self.training_parameters.max_steps,
+        fp16=self.training_parameters.fp16,
+        #push_to_hub=self.training_parameters.push_to_hub,
         )
 
         return training_arguments
@@ -105,8 +94,9 @@ class ModelTraining:
         
         dataset = self.Load_dataset()
         model = self.Base_model()
-        tokenizer = self.Llama_tokenizer()
-        peft_config= self.lora_config()
+        tokenizer = self.Zephyr_tokenizer()
+        peft_config= self.peft_Lora_configuration()
+        model = get_peft_model(model, peft_config)
         training_arguments = self.Training_Argument()
 
         trainer = SFTTrainer(
@@ -114,25 +104,25 @@ class ModelTraining:
             train_dataset=dataset,
             peft_config=peft_config,
             dataset_text_field="text",
-            max_seq_length=self.param.max_seq_length,
+            max_seq_length=self.training_parameters.max_seq_length,
             tokenizer=tokenizer,
             args=training_arguments,
-            packing=self.param.packing,
+            packing=self.training_parameters.packing,
 
            )
 
         trainer.train()
 
-        trainer.model.save_pretrained(self.config.model_name)
+        trainer.model.save_pretrained(self.model_training_config.model_name)
 
-        del model
+        """ del model
         del trainer
         import gc
         gc.collect()
         gc.collect()
 
         base_model = AutoModelForCausalLM.from_pretrained(
-        self.config.model_check_point,
+        self.model_training_config.model_check_point,
         low_cpu_mem_usage=True,
         return_dict=True,
         torch_dtype=torch.float16,
@@ -144,4 +134,4 @@ class ModelTraining:
         tokenizer = AutoTokenizer.from_pretrained(self.config.model_check_point, trust_remote_code=True)
         tokenizer.pad_token = tokenizer.eos_token
         tokenizer.padding_side = "right"
-        tokenizer.save_pretrained(self.config.tokenizer_name)
+        tokenizer.save_pretrained(self.config.tokenizer_name) """

@@ -50,6 +50,8 @@ class TraningArgumentConfig:
     max_steps: int
     fp16: bool
     push_to_hub: bool
+    max_seq_length: int
+    packing: bool
 
 
 @dataclass(frozen=True)
