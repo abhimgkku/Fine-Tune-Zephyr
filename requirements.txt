@@ -1,0 +1,13 @@
+accelerate
+peft
+bitsandbytes
+trl
+py7zr
+auto-gptq
+optimum
+torch
+dataset
+transformers
+huggingface
+
+-e .
