@@ -16,7 +16,7 @@ class ServerConfigurationManager:
 
     def return_mongoconfiguration(self)-> Mongo_DB_Server:
 
-        URI = f"mongodb+srv://{self.Musername}:{self.Mpassword}@cluster0.wnkizzs.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0""
+        URI = f"mongodb+srv://{self.Musername}:{self.Mpassword}@cluster0.wnkizzs.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
 
         # mongo_username=os.getenv("mongo_username")
         # mongo_password=os.getenv("mongo_password")

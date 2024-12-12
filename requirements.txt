@@ -13,5 +13,7 @@ auto-gptq
 optimum
 python-dotenv
 pymongo
+python-box
+ensure
 
 -e .

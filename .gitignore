@@ -164,3 +164,6 @@ venv
 FineTuneZephyr.egg-info
 .env
 Training_data
+artifacts
+logs
+
