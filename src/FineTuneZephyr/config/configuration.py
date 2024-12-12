@@ -4,10 +4,10 @@ from src.FineTuneZephyr.utils.common import read_yaml,create_directories
 from src.FineTuneZephyr.entity import (DataIngestionConfig,
                                        DataValidationConfig,
                                        DataTransformationConfig,
-                                       #TraningArgumentConfig,
-                                       #LoraCongif,
-                                       #ModelTrainingConfig,
-                                       #ModelPredictionConfig
+                                       TraningArgumentConfig,
+                                       LoraCongif,
+                                       ModelTrainingConfig,
+                                       ModelPredictionConfig
                                        
                                        )
 
@@ -60,3 +60,80 @@ class ConfigurationManager:
         )
 
         return data_validation_config
+
+    
+    def get_model_training_config(self)-> ModelTrainingConfig:
+        config = self.config.Model_training
+
+        create_directories([config.root_dir])
+
+        model_training_config= ModelTrainingConfig(
+
+            root_dir = config.root_dir,
+            traning_data_file =  config.traning_data_file,
+            model_name = config.model_name,
+            tokenizer_name = config.tokenizer_name
+
+
+        )
+
+        return model_training_config
+    
+
+    def get_trainingargumentconfig(self)->TraningArgumentConfig:
+        param = self.param.TrainingArguments
+
+        train_argument = TraningArgumentConfig(
+                bits = param.bits,
+                disable_exllama = param.disable_exllama,
+                model_id = param.model_id,
+                device_map = param.device_map,
+                use_cache = param.use_cache,
+                output_dir = param.output_dir,
+                batch_size = param.batch_size,
+                grad_accumulation_steps = param.grad_accumulation_steps,
+                optimizer = param.optimizer,
+                lr = param.lr,
+                lr_scheduler = param.lr_scheduler,
+                save_strategy = param.save_strategy,
+                logging_steps = param.logging_steps,
+                num_train_epoch = param.num_train_epoch,
+                max_steps = param.max_steps,
+                fp16 = param.fp16,
+                push_to_hub = param.push_to_hub,
+             
+
+        )
+
+        return train_argument
+    
+
+    def get_loraconfiguration(self)-> LoraCongif:
+        param = self.param.LoraConfiguration
+
+        lora_config = LoraCongif(
+                    lora_r = param.lora_r
+                    lora_alpha = param.lora_alpha
+                    lora_dropout = param.lora_dropout
+                    bias =  param.bias
+                    task_type = param.task_type
+                    target_modules = param.target_modules
+            
+
+
+        )
+
+        return lora_config
+    
+
+
+    def get_prediction_config(self)-> ModelPredictionConfig:
+        config= self.config.Model_Prediction
+
+        prediction_config = ModelPredictionConfig(
+
+            model_name= config.model_name,
+            tokenizer_name= config.tokenizer_name
+        )
+
+        return prediction_config
