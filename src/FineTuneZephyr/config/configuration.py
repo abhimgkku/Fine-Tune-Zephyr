@@ -2,8 +2,8 @@ from src.FineTuneZephyr.constants import *
 from src.FineTuneZephyr.logging import logger
 from src.FineTuneZephyr.utils.common import read_yaml,create_directories
 from src.FineTuneZephyr.entity import (DataIngestionConfig,
-                                       #DataValidationConfig,
-                                       #DataTransformationConfig,
+                                       DataValidationConfig,
+                                       DataTransformationConfig,
                                        #TraningArgumentConfig,
                                        #LoraCongif,
                                        #ModelTrainingConfig,
@@ -34,3 +34,29 @@ class ConfigurationManager:
 
         return data_ingestion_config
     
+    def get_data_transfomation_config(self)->DataTransformationConfig:
+        config= self.config.Data_Transformation
+
+        create_directories([config.root_dir])
+
+        data_transformation_config = DataTransformationConfig(
+
+            root_dir=config.root_dir,
+            local_data_file = config.local_data_file
+        )
+
+        return data_transformation_config
+    
+    def get_data_valdation_config(self)-> DataValidationConfig:
+        config = self.config.Data_Validaton
+
+        create_directories([config.root_dir])
+
+        data_validation_config = DataValidationConfig(
+
+            root_dir=config.root_dir,
+            status_file=config.status_file,
+            local_file_validation = config.local_file_validation
+        )
+
+        return data_validation_config
