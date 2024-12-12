@@ -9,5 +9,9 @@ torch
 dataset
 transformers
 huggingface
+auto-gptq
+optimum
+python-dotenv
+pymongo
 
 -e .

@@ -1,0 +1,7 @@
+MONGODB:
+  mongodb_url: "mongodb+srv://abhi_mg_k:codenamesnake@cluster0.wnkizzs.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
+  mongodb_name: "FineTuneZephyr_data"
+  mongodb_collection_name: "chatbot_assistant"
+
+AWS_SERVER:
+  aws_s3_bucket_name: ""  

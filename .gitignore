@@ -162,3 +162,5 @@ cython_debug/
 #.idea/
 venv
 FineTuneZephyr.egg-info
+.env
+Training_data
